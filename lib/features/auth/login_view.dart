@@ -5,9 +5,9 @@ import 'auth_controller.dart';
 class LoginView extends StatelessWidget {
   LoginView({super.key});
 
-  final _formKey         = GlobalKey<FormState>();
-  final _emailCtrl       = TextEditingController();
-  final _passwordCtrl    = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
   final _passwordVisible = false.obs;
 
   // Gunakan Get.find karena AuthController sudah di-put permanent di main.dart
@@ -35,27 +35,23 @@ class LoginView extends StatelessWidget {
                     color: cs.primary,
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  child: Icon(
-                    Icons.car_repair,
-                    size: 44,
-                    color: cs.onPrimary,
-                  ),
+                  child: Icon(Icons.car_repair, size: 44, color: cs.onPrimary),
                 ),
                 const SizedBox(height: 20),
                 Text(
                   'SpotBan Admin',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: cs.onSurface,
-                        letterSpacing: -0.5,
-                      ),
+                    fontWeight: FontWeight.w800,
+                    color: cs.onSurface,
+                    letterSpacing: -0.5,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Masuk untuk mengelola bengkel',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                 ),
                 const SizedBox(height: 36),
 
@@ -84,28 +80,31 @@ class LoginView extends StatelessWidget {
                           const SizedBox(height: 16),
 
                           // Password + toggle visibilitas
-                          Obx(() => TextFormField(
-                                controller: _passwordCtrl,
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
-                                  prefixIcon:
-                                      const Icon(Icons.lock_outline_rounded),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _passwordVisible.value
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                    ),
-                                    onPressed: () => _passwordVisible.toggle(),
-                                  ),
+                          Obx(
+                            () => TextFormField(
+                              controller: _passwordCtrl,
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                prefixIcon: const Icon(
+                                  Icons.lock_outline_rounded,
                                 ),
-                                obscureText: !_passwordVisible.value,
-                                textInputAction: TextInputAction.done,
-                                onFieldSubmitted: (_) => _submit(),
-                                validator: (v) => (v == null || v.length < 6)
-                                    ? 'Min 6 karakter'
-                                    : null,
-                              )),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _passwordVisible.value
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                  ),
+                                  onPressed: () => _passwordVisible.toggle(),
+                                ),
+                              ),
+                              obscureText: !_passwordVisible.value,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _submit(),
+                              validator: (v) => (v == null || v.length < 6)
+                                  ? 'Min 6 karakter'
+                                  : null,
+                            ),
+                          ),
                           const SizedBox(height: 12),
 
                           // Pesan error
@@ -120,26 +119,28 @@ class LoginView extends StatelessWidget {
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .errorContainer,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.errorContainer,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.error_outline,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onErrorContainer,
-                                      size: 18),
+                                  Icon(
+                                    Icons.error_outline,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onErrorContainer,
+                                    size: 18,
+                                  ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       _authCtrl.errorMessage.value,
                                       style: TextStyle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onErrorContainer,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onErrorContainer,
                                         fontSize: 13,
                                       ),
                                     ),
@@ -150,17 +151,21 @@ class LoginView extends StatelessWidget {
                           }),
 
                           // Tombol Login
-                          Obx(() => _authCtrl.isLoading.value
-                              ? const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 8),
-                                    child: CircularProgressIndicator(),
+                          Obx(
+                            () => _authCtrl.isLoading.value
+                                ? const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                : ElevatedButton(
+                                    onPressed: _submit,
+                                    child: const Text('Masuk'),
                                   ),
-                                )
-                              : ElevatedButton(
-                                  onPressed: _submit,
-                                  child: const Text('Masuk'),
-                                )),
+                          ),
                         ],
                       ),
                     ),

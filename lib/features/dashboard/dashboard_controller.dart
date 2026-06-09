@@ -11,15 +11,15 @@ import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Workshop {
-  final String         id;
-  final String         name;
-  final String?        description;
-  final String         address;
-  final int?           priceStart;
-  final List<String>?  vehicleTypes;
-  final List<String>?  serviceTypes;
-  final double?        latitude;
-  final double?        longitude;
+  final String id;
+  final String name;
+  final String? description;
+  final String address;
+  final int? priceStart;
+  final List<String>? vehicleTypes;
+  final List<String>? serviceTypes;
+  final double? latitude;
+  final double? longitude;
 
   const Workshop({
     required this.id,
@@ -34,27 +34,27 @@ class Workshop {
   });
 
   factory Workshop.fromMap(Map<String, dynamic> map) => Workshop(
-        id:           map['id']      as String,
-        name:         map['name']    as String,
-        address:      map['address'] as String,
-        description:  map['description'] as String?,
-        priceStart:   map['price_start'] as int?,
-        vehicleTypes: (map['vehicle_types'] as List?)
-            ?.map((e) => e.toString())
-            .toList(),
-        serviceTypes: (map['service_types'] as List?)
-            ?.map((e) => e.toString())
-            .toList(),
-        latitude:  (map['latitude']  as num?)?.toDouble(),
-        longitude: (map['longitude'] as num?)?.toDouble(),
-      );
+    id: map['id'] as String,
+    name: map['name'] as String,
+    address: map['address'] as String,
+    description: map['description'] as String?,
+    priceStart: map['price_start'] as int?,
+    vehicleTypes: (map['vehicle_types'] as List?)
+        ?.map((e) => e.toString())
+        .toList(),
+    serviceTypes: (map['service_types'] as List?)
+        ?.map((e) => e.toString())
+        .toList(),
+    latitude: (map['latitude'] as num?)?.toDouble(),
+    longitude: (map['longitude'] as num?)?.toDouble(),
+  );
 }
 
 class DashboardController extends GetxController {
   final _supabase = Supabase.instance.client;
 
-  final workshops    = <Workshop>[].obs;
-  final isLoading    = false.obs;
+  final workshops = <Workshop>[].obs;
+  final isLoading = false.obs;
   final errorMessage = ''.obs;
 
   @override
@@ -64,7 +64,7 @@ class DashboardController extends GetxController {
   }
 
   Future<void> fetchWorkshops() async {
-    isLoading.value    = true;
+    isLoading.value = true;
     errorMessage.value = '';
 
     try {
@@ -77,8 +77,7 @@ class DashboardController extends GetxController {
           .eq('is_active', true)
           .order('name', ascending: true);
 
-      workshops.value =
-          (data as List).map((e) => Workshop.fromMap(e)).toList();
+      workshops.value = (data as List).map((e) => Workshop.fromMap(e)).toList();
     } on PostgrestException catch (e) {
       errorMessage.value = 'DB Error: ${e.message}';
     } catch (e) {

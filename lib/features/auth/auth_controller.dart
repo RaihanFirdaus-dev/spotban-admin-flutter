@@ -4,11 +4,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class AuthController extends GetxController {
   final _supabase = Supabase.instance.client;
 
-  final isLoading    = false.obs;
+  final isLoading = false.obs;
   final errorMessage = ''.obs;
 
   Future<void> signIn(String email, String password) async {
-    isLoading.value    = true;
+    isLoading.value = true;
     errorMessage.value = '';
 
     try {

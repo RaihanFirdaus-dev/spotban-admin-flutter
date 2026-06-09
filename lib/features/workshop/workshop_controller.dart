@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -19,21 +18,18 @@ class WorkshopController extends GetxController {
   final descCtrl = TextEditingController();
   final addressCtrl = TextEditingController();
   final priceCtrl = TextEditingController();
-  final locationSearchCtrl = TextEditingController();
 
   // ── Observable State ──────────────────────────────────────────────────────
   final isLoading = false.obs;
   final isLocating = false.obs;
-  final isSearchingLocation = false.obs;
   final selectedImages = <XFile>[].obs;
   final existingPhotoUrls = <String>[].obs;
   final selectedLocation = Rxn<LatLng>();
-  final locationSearchResults = <NominatimResult>[].obs;
 
-  // ── Tipe Kendaraan (Truk dihapus) ─────────────────────────────────────────
+  // ── Tipe Kendaraan ────────────────────────────────────────────────────────
   final vehicleTypes = <String, bool>{'Motor': false, 'Mobil': false}.obs;
 
-  // ── Jenis Layanan (relevan Motor & Mobil) ─────────────────────────────────
+  // ── Jenis Layanan ─────────────────────────────────────────────────────────
   final serviceTypes = <String, bool>{
     'Tambal Ban': false,
     'Ganti Ban': false,
@@ -71,7 +67,6 @@ class WorkshopController extends GetxController {
     descCtrl.dispose();
     addressCtrl.dispose();
     priceCtrl.dispose();
-    locationSearchCtrl.dispose();
     super.onClose();
   }
 
@@ -128,8 +123,6 @@ class WorkshopController extends GetxController {
         desiredAccuracy: LocationAccuracy.high,
       );
       selectedLocation.value = LatLng(pos.latitude, pos.longitude);
-      locationSearchResults.clear();
-      locationSearchCtrl.clear();
       Get.snackbar(
         'Lokasi Ditemukan',
         '${pos.latitude.toStringAsFixed(6)}, ${pos.longitude.toStringAsFixed(6)}',
@@ -143,44 +136,6 @@ class WorkshopController extends GetxController {
     } finally {
       isLocating.value = false;
     }
-  }
-
-  // ── Nominatim Geocoding (OpenStreetMap, gratis tanpa API key) ─────────────
-  Future<void> searchLocation(String query) async {
-    if (query.trim().length < 3) {
-      locationSearchResults.clear();
-      return;
-    }
-    isSearchingLocation.value = true;
-    try {
-      final uri = Uri.parse(
-        'https://nominatim.openstreetmap.org/search'
-        '?q=${Uri.encodeComponent(query)}'
-        '&format=json&addressdetails=1&limit=7&accept-language=id',
-      );
-      final client = HttpClient();
-      final request = await client.getUrl(uri);
-      request.headers.set(
-        'User-Agent',
-        'SpotBanAdmin/1.0 (spotban@example.com)',
-      );
-      final response = await request.close();
-      final body = await response.transform(utf8.decoder).join();
-      final List<dynamic> data = jsonDecode(body) as List<dynamic>;
-      locationSearchResults.value = data
-          .map((item) => NominatimResult.fromJson(item as Map<String, dynamic>))
-          .toList();
-    } catch (_) {
-      locationSearchResults.clear();
-    } finally {
-      isSearchingLocation.value = false;
-    }
-  }
-
-  void selectSearchResult(NominatimResult result) {
-    selectedLocation.value = LatLng(result.lat, result.lon);
-    locationSearchCtrl.text = result.shortName;
-    locationSearchResults.clear();
   }
 
   // ── Image Picker ──────────────────────────────────────────────────────────
@@ -246,20 +201,22 @@ class WorkshopController extends GetxController {
   }
 
   Future<void> _updateWorkshopDirect() async {
-    await _supabase
-        .from('workshops')
-        .update({
-          'name': nameCtrl.text.trim(),
-          'description': descCtrl.text.trim(),
-          'address': addressCtrl.text.trim(),
-          'price_start': int.tryParse(priceCtrl.text.trim()) ?? 0,
-          'vehicle_types': _selectedKeys(vehicleTypes),
-          'service_types': _selectedKeys(serviceTypes),
-          'latitude': selectedLocation.value!.latitude,
-          'longitude': selectedLocation.value!.longitude,
-          'updated_at': DateTime.now().toIso8601String(),
-        })
-        .eq('id', editingWorkshop!.id);
+    // Gunakan RPC agar server yang menangani update kolom latitude/longitude
+    // (menghindari error "can only be updated to DEFAULT" dari generated column)
+    await _supabase.rpc(
+      'update_workshop',
+      params: {
+        'p_id': editingWorkshop!.id,
+        'p_name': nameCtrl.text.trim(),
+        'p_description': descCtrl.text.trim(),
+        'p_address': addressCtrl.text.trim(),
+        'p_price_start': int.tryParse(priceCtrl.text.trim()) ?? 0,
+        'p_vehicle_types': _selectedKeys(vehicleTypes),
+        'p_service_types': _selectedKeys(serviceTypes),
+        'p_latitude': selectedLocation.value!.latitude,
+        'p_longitude': selectedLocation.value!.longitude,
+      },
+    );
   }
 
   Future<void> _insertPhotoRecords(String workshopId, List<String> urls) async {
@@ -285,7 +242,7 @@ class WorkshopController extends GetxController {
     if (selectedLocation.value == null) {
       Get.snackbar(
         'Lokasi Belum Dipilih',
-        'Gunakan tombol GPS atau cari nama jalan di atas peta.',
+        'Gunakan tombol GPS atau ketuk peta untuk memilih lokasi.',
         icon: const Icon(Icons.location_off, color: Colors.white),
         backgroundColor: Colors.orange.shade700,
         colorText: Colors.white,
@@ -334,30 +291,4 @@ class WorkshopController extends GetxController {
       serviceTypes[key] = !(serviceTypes[key] ?? false);
   List<String> _selectedKeys(Map<String, bool> map) =>
       map.entries.where((e) => e.value).map((e) => e.key).toList();
-}
-
-// ── Model Hasil Nominatim ─────────────────────────────────────────────────────
-class NominatimResult {
-  final String displayName;
-  final String shortName;
-  final double lat;
-  final double lon;
-
-  const NominatimResult({
-    required this.displayName,
-    required this.shortName,
-    required this.lat,
-    required this.lon,
-  });
-
-  factory NominatimResult.fromJson(Map<String, dynamic> json) {
-    final name = json['display_name'] as String? ?? '';
-    final short = name.split(',').first.trim();
-    return NominatimResult(
-      displayName: name,
-      shortName: short,
-      lat: double.tryParse(json['lat'] as String? ?? '0') ?? 0,
-      lon: double.tryParse(json['lon'] as String? ?? '0') ?? 0,
-    );
-  }
 }

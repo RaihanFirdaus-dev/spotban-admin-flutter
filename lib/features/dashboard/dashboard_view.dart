@@ -6,8 +6,8 @@ import 'dashboard_controller.dart';
 class DashboardView extends StatelessWidget {
   DashboardView({super.key});
 
-  final DashboardController _ctrl     = Get.put(DashboardController());
-  final AuthController      _authCtrl = Get.find<AuthController>();
+  final DashboardController _ctrl = Get.put(DashboardController());
+  final AuthController _authCtrl = Get.find<AuthController>();
 
   @override
   Widget build(BuildContext context) {
@@ -19,27 +19,31 @@ class DashboardView extends StatelessWidget {
         title: const Text('SpotBan Admin'),
         actions: [
           // Jumlah bengkel aktif sebagai badge info
-          Obx(() => _ctrl.workshops.isNotEmpty
-              ? Center(
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: cs.onPrimary.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${_ctrl.workshops.length} bengkel',
-                      style: TextStyle(
-                        color: cs.onPrimary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+          Obx(
+            () => _ctrl.workshops.isNotEmpty
+                ? Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: cs.onPrimary.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${_ctrl.workshops.length} bengkel',
+                        style: TextStyle(
+                          color: cs.onPrimary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                )
-              : const SizedBox.shrink()),
+                  )
+                : const SizedBox.shrink(),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Refresh',
@@ -84,9 +88,13 @@ class DashboardView extends StatelessWidget {
             itemBuilder: (_, i) {
               return _WorkshopCard(
                 workshop: _ctrl.workshops[i],
-                onEdit: () => _navigateToForm(context, workshop: _ctrl.workshops[i]),
-                onDelete: () =>
-                    _confirmDelete(context, _ctrl.workshops[i].id, _ctrl.workshops[i].name),
+                onEdit: () =>
+                    _navigateToForm(context, workshop: _ctrl.workshops[i]),
+                onDelete: () => _confirmDelete(
+                  context,
+                  _ctrl.workshops[i].id,
+                  _ctrl.workshops[i].name,
+                ),
               );
             },
           ),
@@ -96,7 +104,10 @@ class DashboardView extends StatelessWidget {
   }
 
   // Navigasi ke form — tunggu result; jika true → refresh list
-  Future<void> _navigateToForm(BuildContext context, {Workshop? workshop}) async {
+  Future<void> _navigateToForm(
+    BuildContext context, {
+    Workshop? workshop,
+  }) async {
     final result = await Get.toNamed(
       '/workshop-form',
       arguments: workshop, // null = mode Tambah, non-null = mode Edit
@@ -110,17 +121,17 @@ class DashboardView extends StatelessWidget {
     showDialog(
       context: ctx,
       builder: (_) => AlertDialog(
-        icon: Icon(Icons.warning_amber_rounded,
-            color: Theme.of(ctx).colorScheme.error, size: 36),
+        icon: Icon(
+          Icons.warning_amber_rounded,
+          color: Theme.of(ctx).colorScheme.error,
+          size: 36,
+        ),
         title: const Text('Nonaktifkan Bengkel?'),
         content: Text(
           '"$name" akan disembunyikan dari aplikasi.\nData tidak akan dihapus permanen.',
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Batal'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Batal')),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(ctx).colorScheme.error,
@@ -172,9 +183,9 @@ class _WorkshopCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs   = Theme.of(context).colorScheme;
-    final tt   = Theme.of(context).textTheme;
-    final w    = workshop;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final w = workshop;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -195,8 +206,11 @@ class _WorkshopCard extends StatelessWidget {
                     color: cs.primaryContainer,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.car_repair,
-                      color: cs.onPrimaryContainer, size: 22),
+                  child: Icon(
+                    Icons.car_repair,
+                    color: cs.onPrimaryContainer,
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -214,14 +228,18 @@ class _WorkshopCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          Icon(Icons.location_on_outlined,
-                              size: 13, color: cs.onSurfaceVariant),
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 13,
+                            color: cs.onSurfaceVariant,
+                          ),
                           const SizedBox(width: 2),
                           Expanded(
                             child: Text(
                               w.address,
                               style: tt.bodySmall?.copyWith(
-                                  color: cs.onSurfaceVariant),
+                                color: cs.onSurfaceVariant,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -251,11 +269,16 @@ class _WorkshopCard extends StatelessWidget {
                     PopupMenuItem(
                       value: 'delete',
                       child: ListTile(
-                        leading: Icon(Icons.block_outlined,
-                            color: Theme.of(context).colorScheme.error),
-                        title: Text('Nonaktifkan',
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.error)),
+                        leading: Icon(
+                          Icons.block_outlined,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        title: Text(
+                          'Nonaktifkan',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
                         contentPadding: EdgeInsets.zero,
                         dense: true,
                       ),
@@ -359,11 +382,14 @@ class _ChipRow extends StatelessWidget {
               children: [
                 Icon(icon, size: 11, color: textColor),
                 const SizedBox(width: 4),
-                Text(item,
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: textColor,
-                        fontWeight: FontWeight.w500)),
+                Text(
+                  item,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: textColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),
@@ -391,18 +417,17 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'Belum ada bengkel',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             Text(
               'Tekan tombol di bawah untuk menambahkan bengkel pertama.',
               textAlign: TextAlign.center,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: cs.outlineVariant),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: cs.outlineVariant),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
@@ -433,9 +458,11 @@ class _ErrorState extends StatelessWidget {
           children: [
             Icon(Icons.cloud_off_rounded, size: 64, color: cs.error),
             const SizedBox(height: 16),
-            Text(message,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: cs.onSurfaceVariant)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: cs.onSurfaceVariant),
+            ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
               onPressed: onRetry,
