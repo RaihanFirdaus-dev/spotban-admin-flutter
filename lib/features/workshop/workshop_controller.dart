@@ -201,8 +201,6 @@ class WorkshopController extends GetxController {
   }
 
   Future<void> _updateWorkshopDirect() async {
-    // Gunakan RPC agar server yang menangani update kolom latitude/longitude
-    // (menghindari error "can only be updated to DEFAULT" dari generated column)
     await _supabase.rpc(
       'update_workshop',
       params: {

@@ -39,7 +39,7 @@ class LoginView extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'SpotBan Admin',
+                  'SpotBan',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: cs.onSurface,
@@ -166,6 +166,19 @@ class LoginView extends StatelessWidget {
                                     child: const Text('Masuk'),
                                   ),
                           ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("Belum punya akun?"),
+                              TextButton(
+                                onPressed: () => Get.toNamed('/register'),
+                                child: const Text(
+                                  "Daftar di sini",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -182,6 +195,10 @@ class LoginView extends StatelessWidget {
   void _submit() {
     if (_formKey.currentState!.validate()) {
       _authCtrl.signIn(_emailCtrl.text, _passwordCtrl.text);
+
+      // Bersihkan teks agar saat logout, form kembali kosong 100%
+      _emailCtrl.clear();
+      _passwordCtrl.clear();
     }
   }
 }

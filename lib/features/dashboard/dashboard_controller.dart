@@ -1,12 +1,3 @@
-// CATATAN DB: Pastikan tabel `workshops` memiliki kolom latitude & longitude.
-// Jika lokasi hanya disimpan sebagai PostGIS geometry, jalankan SQL ini sekali:
-//
-//   ALTER TABLE workshops
-//     ADD COLUMN latitude  double precision
-//       GENERATED ALWAYS AS (ST_Y(location::geometry)) STORED,
-//     ADD COLUMN longitude double precision
-//       GENERATED ALWAYS AS (ST_X(location::geometry)) STORED;
-
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -87,10 +78,6 @@ class DashboardController extends GetxController {
     }
   }
 
-  /// Soft-Delete: set is_active = false.
-  /// Optimistic UI: item langsung dihapus dari list lokal sebelum
-  /// menunggu response server. Jika server gagal, list di-rollback via
-  /// fetchWorkshops().
   Future<void> deleteWorkshop(String id) async {
     workshops.removeWhere((w) => w.id == id);
 
